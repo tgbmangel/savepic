@@ -14,6 +14,7 @@ def savepic():
 
     if not os.path.exists(addr_path):
         os.makedirs(addr_path)
+
     examtime=time.strftime("%Y%m%d%H%M%S",time.localtime())
     addr=os.path.normcase(addr_path+"\\"+examtime+".jpeg")
     im = ImageGrab.grab()
@@ -25,6 +26,7 @@ def getpath():
     return filepath
 
 root =tk.Tk()
+root.wm_attributes('-topmost',1)
 root.title("GrabWA55")
 root.geometry('200x100')
 
