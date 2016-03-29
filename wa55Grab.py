@@ -2,7 +2,32 @@
 import Tkinter as tk
 import tkMessageBox
 from PIL import ImageGrab
-import time,os
+import time,os,ctypes
+#print os.getcwd()
+#os.chdir("D:\python_code\mywork\WA55")
+def windowCapture():
+    try:
+        dll=ctypes.cdll.LoadLibrary('PrScrn.dll')
+    except Exception:
+        tkMessageBox.showinfo(title='error',message="can't find PrScrn.dll!")
+        exit(0)
+    else:
+        try:
+            dll.PrScrn(0)
+        except:
+            tkMessageBox.showinfo(title='error',message="Sth wrong in capture!")
+            exit(0)
+def Capture():
+    try:
+        dll = ctypes.cdll.LoadLibrary('CameraDll.dll')
+    except Exception:
+        tkMessageBox.showinfo(title='error',message="can't find CameraDll.dll!")
+        exit(0)
+    else:
+        try:
+            dll.CameraSubArea(0)
+        except Exception as e:
+            return
 
 def savepic():
     if getpath():
@@ -28,7 +53,7 @@ def getpath():
 root =tk.Tk()
 root.wm_attributes('-topmost',1)
 root.title("GrabWA55")
-root.geometry('200x100')
+root.geometry('200x300')
 
 pathLable=tk.Label(root,text=u'´æÍ¼Â·¾¶:')
 pathLable.pack()
@@ -39,4 +64,6 @@ var.set("E:\\1")
 e.pack()
 
 tk.Button(root, width=10,heigh=4,fg="blue",text="Save", command = savepic).pack()
+tk.Button(root, width=10,heigh=4,fg="blue",text="Winodow\nCapture", command = windowCapture).pack()
+tk.Button(root, width=10,heigh=4,fg="blue",text="Capture", command = Capture).pack()
 root.mainloop()
