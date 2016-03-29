@@ -10,16 +10,22 @@ def getpid():
                 return w1
         except Exception as e:
             pass
-w1=getpid()
+
 def getMemory():
-    if not w1.name()==exename:
-        a.configure(text="not exist:"+str(exename))
+    try:
         w1=getpid()
+        if not w1.name()==exename:
+            a.configure(text="not exist:"+str(exename))
+            w1=getpid()
+            root.after(2000,getMemory)
+        else:    
+            text2=str(float(w1.get_memory_info()[0]/1024.0/1024.0))+'M '+w1.name()
+            a.configure(text=text2)
+            root.after(1000,getMemory)
+    except Exception:
+        a.configure(text="not exist:"+str(exename))
+        #w1=getpid()
         root.after(2000,getMemory)
-    else:    
-        text2=str(float(w1.get_memory_info()[0]/1024.0/1024.0))+'M '+w1.name()
-        a.configure(text=text2)
-        root.after(1000,getMemory)
 
 root =tk.Tk()
 root.wm_attributes('-topmost',1)
