@@ -2,10 +2,7 @@
 import urllib,os,urllib2,cookielib
 import Image,pytesser
 import re,time
-#szgjj_url="http://www.szzfgjj.com/fzgn/zfcq/"
 
-
-codename="code.gif"
 def identifyCode(codename):
     # 二值化
     threshold = 140
@@ -33,7 +30,7 @@ def Requestszgjj(gjj_account,id_num):
     id_html="certinum"
     verify_html='verify'
     qryflag='qryflag'
-
+    codename="code.gif"
     cookie = cookielib.CookieJar()
     handler = urllib2.HTTPCookieProcessor(cookie)
     opener = urllib2.build_opener(handler)
@@ -60,8 +57,6 @@ def Requestszgjj(gjj_account,id_num):
     return result
 
 def resultFilter(strings):
-    #{success:false,msg:'验证码错误',oppsucc:false}
-    #{success:true,cardstat:'2',newaccnum:'20325923777',msg:'14984.03',peraccstate:'0',oppsucc:false,sbbalance:'0.00'}
     suceess_if_patten=re.compile("success:(.*?)\,")
     success_if=suceess_if_patten.findall(strings)[0]
     if success_if=='true':
@@ -70,9 +65,6 @@ def resultFilter(strings):
         return False
 
 def Displayresult(strings,success):
-    #print strings
-    #{success:false,msg:'验证码错误',oppsucc:false}
-    #{success:true,cardstat:'2',newaccnum:'20325923777',msg:'14984.03',peraccstate:'0',oppsucc:false,sbbalance:'0.00'}
     newaccnum_patten=re.compile("newaccnum:\'(.*?)\'\,")
     msg_patten=re.compile("msg:\'(.*?)\'\,")
     sbbalance_patten=re.compile("sbbalance:\'(.*)\'")
