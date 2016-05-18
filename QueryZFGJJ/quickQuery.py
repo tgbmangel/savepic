@@ -105,18 +105,19 @@ if __name__=="__main__":
     gjj_account=***********
     #身份证号，数字
     id_num=******************
-    while True:
+    if_continue=True
+    while if_continue:
         try:
             gjj_account+=1
             print "公积金账号：",gjj_account
-            if_continue=True
+            
             request_rst=Requestszgjj(gjj_account,id_num)
             if_success=resultFilter(request_rst)
             time.sleep(0.3)
             responeTXT=Displayresult(request_rst,if_success)
             if if_success:
                 print responeTXT
-                break
+                if_continue=False
             else:
                 if u'验证码错误' in responeTXT:
                     print responeTXT
