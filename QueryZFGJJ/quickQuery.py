@@ -1,7 +1,11 @@
 #coding:cp936
+#深圳公积金查询
 import urllib,os,urllib2,cookielib
 import Image,pytesser
 import re,time
+#szgjj_url="http://www.szzfgjj.com/fzgn/zfcq/"
+
+
 
 def identifyCode(codename):
     # 二值化
@@ -24,6 +28,7 @@ def identifyCode(codename):
 
 
 def Requestszgjj(gjj_account,id_num):
+    #POST请求，返回response.read()
     szgjj_url="http://app.szzfgjj.com:7001/accountQuery"
     verifycode="http://app.szzfgjj.com:7001/pages/code.jsp"
     gjj_account_html='accnum'
@@ -31,6 +36,7 @@ def Requestszgjj(gjj_account,id_num):
     verify_html='verify'
     qryflag='qryflag'
     codename="code.gif"
+
     cookie = cookielib.CookieJar()
     handler = urllib2.HTTPCookieProcessor(cookie)
     opener = urllib2.build_opener(handler)
@@ -57,6 +63,7 @@ def Requestszgjj(gjj_account,id_num):
     return result
 
 def resultFilter(strings):
+    #返回response的结果,true or false
     suceess_if_patten=re.compile("success:(.*?)\,")
     success_if=suceess_if_patten.findall(strings)[0]
     if success_if=='true':
@@ -65,41 +72,58 @@ def resultFilter(strings):
         return False
 
 def Displayresult(strings,success):
+    #根据response  的true  or false，来显示结果
+    #print strings
+    #{success:false,msg:'验证码错误',oppsucc:false}
+    #{success:true,cardstat:'2',newaccnum:'20325923777',msg:'14984.03',peraccstate:'0',oppsucc:false,sbbalance:'0.00'}
     newaccnum_patten=re.compile("newaccnum:\'(.*?)\'\,")
     msg_patten=re.compile("msg:\'(.*?)\'\,")
     sbbalance_patten=re.compile("sbbalance:\'(.*)\'")
     cardstat_patten=re.compile("cardstat:\'(.*?)\'\,")
     gjj_money=msg_patten.findall(strings)[0]
+    display_string=''
     if success:
         newaccnum_number=newaccnum_patten.findall(strings)[0]
         sbbalance_money=sbbalance_patten.findall(strings)[0]
         cardsta=cardstat_patten.findall(strings)[0]
-        print '公积金账号：',newaccnum_number,
-        print '公积金账号：',gjj_money,
-        print '社保移交金额：',sbbalance_money,
+        display_string+=u'公积金账号： 公积金金额：社保移交金额：卡状态： \n'
+        display_string+=newaccnum_number
+        display_string+=gjj_money
+        display_string+=sbbalance_money
         if cardsta=='2':
-            print '卡状态：正常'
+            display_string+=u"正常"
         else:
-            print "卡状态：不正常"
+            display_string+=u"不正常"
     else:
-        print "msg:",gjj_money,"将自动进行下次查询，需要修改信息，请关闭程序"
+        display_string+=gjj_money
+        display_string+=u"  将自动进行下次查询，需要修改信息，请关闭程序"
+    return display_string
 
 
 if __name__=="__main__":
-    #公积金账号，数字
-    gjj_account= ************
+    #公积金账号遍历起始位置
+    gjj_account=***********
     #身份证号，数字
-    id_num= ************
-
-    if_continue=True
-    while if_continue:
-        request_rst=Requestszgjj(gjj_account,id_num)
-        if_success=resultFilter(request_rst)
-        time.sleep(2)
-        if if_success:
-            Displayresult(request_rst,if_success)
-            if_continue=False
-        else:
-            Displayresult(request_rst,if_success)
+    id_num=******************
+    while True:
+        try:
+            gjj_account+=1
+            print "公积金账号：",gjj_account
+            if_continue=True
+            request_rst=Requestszgjj(gjj_account,id_num)
+            if_success=resultFilter(request_rst)
+            time.sleep(0.3)
+            responeTXT=Displayresult(request_rst,if_success)
+            if if_success:
+                print responeTXT
+                break
+            else:
+                if u'验证码错误' in responeTXT:
+                    print responeTXT
+                    gjj_account=gjj_account-1
+                else:
+                    print responeTXT
+        except Exception as e:
+            print e
 
 
