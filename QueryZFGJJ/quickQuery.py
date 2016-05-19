@@ -1,8 +1,7 @@
 #coding:cp936
-#深圳公积金查询
-import urllib,os,urllib2,cookielib
+import urllib,os,urllib2,cookielib,socket
 import Image,pytesser
-import re,time
+import re,time,thread
 #szgjj_url="http://www.szzfgjj.com/fzgn/zfcq/"
 
 
@@ -27,7 +26,7 @@ def identifyCode(codename):
     return text
 
 
-def Requestszgjj(gjj_account,id_num):
+def Requestszgjj(gjj_account,id_num,codename):
     #POST请求，返回response.read()
     szgjj_url="http://app.szzfgjj.com:7001/accountQuery"
     verifycode="http://app.szzfgjj.com:7001/pages/code.jsp"
@@ -35,7 +34,7 @@ def Requestszgjj(gjj_account,id_num):
     id_html="certinum"
     verify_html='verify'
     qryflag='qryflag'
-    codename="code.gif"
+    #codename="code.gif"
 
     cookie = cookielib.CookieJar()
     handler = urllib2.HTTPCookieProcessor(cookie)
@@ -64,6 +63,7 @@ def Requestszgjj(gjj_account,id_num):
 
 def resultFilter(strings):
     #返回response的结果,true or false
+    #strings =Requestszgjj()
     suceess_if_patten=re.compile("success:(.*?)\,")
     success_if=suceess_if_patten.findall(strings)[0]
     if success_if=='true':
@@ -73,9 +73,7 @@ def resultFilter(strings):
 
 def Displayresult(strings,success):
     #根据response  的true  or false，来显示结果
-    #print strings
-    #{success:false,msg:'验证码错误',oppsucc:false}
-    #{success:true,cardstat:'2',newaccnum:'20325923777',msg:'14984.03',peraccstate:'0',oppsucc:false,sbbalance:'0.00'}
+    #strings =Requestszgjj()
     newaccnum_patten=re.compile("newaccnum:\'(.*?)\'\,")
     msg_patten=re.compile("msg:\'(.*?)\'\,")
     sbbalance_patten=re.compile("sbbalance:\'(.*)\'")
@@ -86,45 +84,43 @@ def Displayresult(strings,success):
         newaccnum_number=newaccnum_patten.findall(strings)[0]
         sbbalance_money=sbbalance_patten.findall(strings)[0]
         cardsta=cardstat_patten.findall(strings)[0]
-        display_string+=u'公积金账号： 公积金金额：社保移交金额：卡状态： \n'
-        display_string+=newaccnum_number
-        display_string+=gjj_money
-        display_string+=sbbalance_money
+        dstring=u'公积金账号：%s 公积金金额：%s 社保移交金额：%s 卡状态：'% (newaccnum_number,gjj_money,sbbalance_money)
+        display_string+=dstring
         if cardsta=='2':
             display_string+=u"正常"
         else:
             display_string+=u"不正常"
     else:
-        display_string+=gjj_money
-        display_string+=u"  将自动进行下次查询，需要修改信息，请关闭程序"
+        display_string=u"提示: %s  将自动进行下次查询，需要修改信息，请关闭程序" %gjj_money
     return display_string
 
 
 if __name__=="__main__":
-    #公积金账号遍历起始位置
-    gjj_account=***********
+    #公积金账号，数字
+    #gjj_account=******************
     #身份证号，数字
-    id_num=******************
-    if_continue=True
-    while if_continue:
-        try:
-            gjj_account+=1
-            print "公积金账号：",gjj_account
-            
-            request_rst=Requestszgjj(gjj_account,id_num)
-            if_success=resultFilter(request_rst)
-            time.sleep(0.3)
-            responeTXT=Displayresult(request_rst,if_success)
-            if if_success:
-                print responeTXT
-                if_continue=False
-            else:
-                if u'验证码错误' in responeTXT:
+    #id_num=*******************
+    socket.setdefaulttimeout(5.0)
+    def querystartat(gjj_account,id_num,codename,times=1):#times支持从当前公积金好开始查询多少个
+        orign_end=gjj_account+times
+        if_continue=True
+        while if_continue and (gjj_account<orign_end):
+            try:
+                print "公积金账号：",gjj_account
+                request_rst=Requestszgjj(gjj_account,id_num,codename)
+                if_success=resultFilter(request_rst)
+                time.sleep(0.3)
+                responeTXT=Displayresult(request_rst,if_success)
+                gjj_account+=1
+                if if_success:
                     print responeTXT
-                    gjj_account=gjj_account-1
+                    if_continue=False
                 else:
-                    print responeTXT
-        except Exception as e:
-            print e
-
-
+                    if u'验证码错误' in responeTXT:
+                        print responeTXT
+                        gjj_account=gjj_account-1
+                    else:
+                        print responeTXT
+            except Exception as e:
+                print e
+    querystartat(20325923771,430726198911151810,"code2.gif")
