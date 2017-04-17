@@ -1,2 +1,2 @@
 内存实时监测的小工具
-使用py2exe打包，第三方库psutil
+使用pyinstaller打包，第三方库psutil
